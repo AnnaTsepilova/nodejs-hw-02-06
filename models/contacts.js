@@ -4,6 +4,9 @@ const { v4: uuidv4 } = require("uuid");
 
 const contactsPath = path.resolve("models/contacts.json");
 
+// const contacts = await Contacts.find({}).toArray();
+// console.log(contacts);
+
 const listContacts = async () => {
   try {
     const contactsList = await fs.readFile(contactsPath, "utf8");
