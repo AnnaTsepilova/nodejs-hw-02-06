@@ -1,19 +1,31 @@
+//const { Contact } = require("../db/contactModel");
+const { connectMongo } = require("../db/connection");
+
 const fs = require("fs/promises");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 const contactsPath = path.resolve("models/contacts.json");
 
-// const contacts = await Contacts.find({}).toArray();
-// console.log(contacts);
-
 const listContacts = async () => {
   try {
-    const contactsList = await fs.readFile(contactsPath, "utf8");
-    return JSON.parse(contactsList);
+    const Contacts = await connectMongo();
+    const contactsList = await Contacts.find({}).toArray();
+
+    return contactsList;
   } catch (error) {
     console.log(error.message);
   }
+  // const { Contacts } = await connectMongo();
+  // const contactsList = await Contacts.find({});
+  // res.json({ contactsList });
+  //----------------------------------------
+  // try {
+  //   const contactsList = await fs.readFile(contactsPath, "utf8");
+  //   return JSON.parse(contactsList);
+  // } catch (error) {
+  //   console.log(error.message);
+  // }
 };
 
 const getContactById = async (contactId) => {

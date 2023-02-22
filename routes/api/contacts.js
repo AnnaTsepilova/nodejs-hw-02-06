@@ -24,6 +24,7 @@ const {
 router.get("/", async (req, res, next) => {
   try {
     const contactsList = await listContacts();
+    console.log("contactsList in router get", contactsList);
     return res.status(200).json(contactsList);
   } catch (error) {
     next(error.message);
