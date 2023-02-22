@@ -1,5 +1,6 @@
 //const { Contact } = require("../db/contactModel");
 const { connectMongo } = require("../db/connection");
+const ObjectId = require("mongodb").ObjectId;
 
 const fs = require("fs/promises");
 const path = require("path");
@@ -11,7 +12,6 @@ const listContacts = async () => {
   try {
     const Contacts = await connectMongo();
     const contactsList = await Contacts.find({}).toArray();
-
     return contactsList;
   } catch (error) {
     console.log(error.message);
@@ -30,14 +30,26 @@ const listContacts = async () => {
 
 const getContactById = async (contactId) => {
   try {
-    const contactsList = await listContacts();
-    const contactById = contactsList.filter(
-      (contact) => contact.id === contactId
-    );
+    const Contacts = await connectMongo();
+    console.log("getContactById", Contacts);
+
+    const contactById = Contacts.findOne({
+      _id: new ObjectId(contactId),
+    });
     return contactById;
   } catch (error) {
     console.log(error.message);
   }
+  //------------------------------------------------
+  // try {
+  //   const contactsList = await listContacts();
+  //   const contactById = contactsList.filter(
+  //     (contact) => contact.id === contactId
+  //   );
+  //   return contactById;
+  // } catch (error) {
+  //   console.log(error.message);
+  // }
 };
 
 const removeContact = async (contactId) => {
