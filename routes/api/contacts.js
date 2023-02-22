@@ -11,6 +11,7 @@ const contactSchemaValid = Joi.object({
     tlds: { allow: ["com", "net"] },
   }),
   phone: Joi.string().required(),
+  favorite: Joi.boolean().required(),
 });
 
 const {
@@ -35,7 +36,7 @@ router.get("/:contactId", async (req, res, next) => {
   try {
     const contactById = await getContactById(req.params.contactId);
     if (!contactById) {
-      res.status(404).res.json({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
       return;
     }
     return res.status(200).json(contactById);
@@ -55,6 +56,7 @@ router.post("/", async (req, res, next) => {
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,
+      favorite: req.body.favorite,
     });
     return res.status(201).json(newContact);
   } catch (error) {
@@ -64,12 +66,14 @@ router.post("/", async (req, res, next) => {
 
 router.delete("/:contactId", async (req, res, next) => {
   try {
-    const contactById = await removeContact(req.params.contactId);
+    const contactById = await getContactById(req.params.contactId);
+
     if (!contactById) {
-      res.status(404).res.json({ message: "Not found" });
+      res.status(404).json({ message: "Not found" });
       return;
     }
-    return res.status(200).json({ message: "contact deleted" });
+    await removeContact(req.params.contactId);
+    return res.status(200).json({ message: "Contact was deleted" });
   } catch (error) {
     next(error.message);
   }
@@ -86,7 +90,7 @@ router.put("/:contactId", async (req, res, next) => {
     if (!updatedContact) {
       return res.status(404).json({ message: "Not found" });
     }
-    return res.status(200).json(updatedContact);
+    return res.status(200).json({ message: "Contact was updated" });
   } catch (error) {
     next(error.message);
   }

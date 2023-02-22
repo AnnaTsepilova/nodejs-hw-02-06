@@ -2,12 +2,6 @@
 const { connectMongo } = require("../db/connection");
 const ObjectId = require("mongodb").ObjectId;
 
-const fs = require("fs/promises");
-const path = require("path");
-const { v4: uuidv4 } = require("uuid");
-
-const contactsPath = path.resolve("models/contacts.json");
-
 const listContacts = async () => {
   try {
     const Contacts = await connectMongo();
@@ -16,22 +10,11 @@ const listContacts = async () => {
   } catch (error) {
     console.log(error.message);
   }
-  // const { Contacts } = await connectMongo();
-  // const contactsList = await Contacts.find({});
-  // res.json({ contactsList });
-  //----------------------------------------
-  // try {
-  //   const contactsList = await fs.readFile(contactsPath, "utf8");
-  //   return JSON.parse(contactsList);
-  // } catch (error) {
-  //   console.log(error.message);
-  // }
 };
 
 const getContactById = async (contactId) => {
   try {
     const Contacts = await connectMongo();
-    console.log("getContactById", Contacts);
 
     const contactById = Contacts.findOne({
       _id: new ObjectId(contactId),
@@ -40,28 +23,13 @@ const getContactById = async (contactId) => {
   } catch (error) {
     console.log(error.message);
   }
-  //------------------------------------------------
-  // try {
-  //   const contactsList = await listContacts();
-  //   const contactById = contactsList.filter(
-  //     (contact) => contact.id === contactId
-  //   );
-  //   return contactById;
-  // } catch (error) {
-  //   console.log(error.message);
-  // }
 };
 
 const removeContact = async (contactId) => {
   try {
-    const contactsList = await listContacts();
-    const newContactsList = contactsList.filter(
-      (contact) => contact.id !== contactId
-    );
-    await fs.writeFile(
-      contactsPath,
-      JSON.stringify(newContactsList, null, "\t")
-    );
+    const Contacts = await connectMongo();
+
+    await Contacts.findOneAndDelete({ _id: new ObjectId(contactId) });
   } catch (error) {
     console.log(error.message);
   }
@@ -69,22 +37,16 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
   try {
-    const contactsList = await listContacts();
-    const contactNew = {
-      id: uuidv4(),
+    const Contacts = await connectMongo();
+
+    const newContact = Contacts.insertOne({
+      _id: new ObjectId(),
       name: body.name,
       email: body.email,
       phone: body.phone,
-    };
-    const newContactsList = JSON.stringify(
-      [...contactsList, contactNew],
-      null,
-      "\t"
-    );
-
-    await fs.writeFile(contactsPath, newContactsList);
-
-    return newContactsList;
+      favorite: false,
+    });
+    return newContact;
   } catch (error) {
     console.log(error.message);
   }
@@ -92,20 +54,21 @@ const addContact = async (body) => {
 
 const updateContact = async (contactId, body) => {
   try {
-    const contactsList = await listContacts();
-    const [contactById] = contactsList.filter(
-      (contact) => contact.id === contactId
+    const Contacts = await connectMongo();
+
+    const updatedContact = await Contacts.findOneAndUpdate(
+      { _id: new ObjectId(contactId) },
+      {
+        $set: {
+          name: body.name,
+          email: body.email,
+          phone: body.phone,
+          favorite: body.favorite,
+        },
+      },
+      { returnDocument: "after" }
     );
-
-    contactById.name = body.name;
-    contactById.email = body.email;
-    contactById.phone = body.phone;
-
-    const newContactsList = JSON.stringify(contactsList, null, "\t");
-
-    await fs.writeFile(contactsPath, newContactsList);
-
-    return newContactsList;
+    return updatedContact;
   } catch (error) {
     console.log(error.message);
   }
