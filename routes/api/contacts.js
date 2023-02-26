@@ -4,7 +4,7 @@ const router = express.Router();
 
 const Joi = require("joi");
 
-const contactSchemaValid = Joi.object({
+const addContactSchema = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   email: Joi.string().email({
     minDomainSegments: 2,
@@ -14,12 +14,26 @@ const contactSchemaValid = Joi.object({
   favorite: Joi.boolean().required(),
 });
 
+const updateContactSchema = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: { allow: ["com", "net"] },
+  }),
+  phone: Joi.string().required(),
+});
+
+const updateStatusContactSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
 const {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 } = require("../../models/contacts");
 
 router.get("/", async (req, res, next) => {
@@ -47,7 +61,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const validError = contactSchemaValid.validate(req.body);
+    const validError = addContactSchema.validate(req.body);
     if (validError.error) {
       return res.status(400).json({ message: "missing required fields" });
     }
@@ -81,7 +95,7 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const validError = contactSchemaValid.validate(req.body);
+    const validError = updateContactSchema.validate(req.body);
     if (validError.error) {
       return res.status(400).json({ message: validError.error });
     }
@@ -89,6 +103,26 @@ router.put("/:contactId", async (req, res, next) => {
     const updatedContact = await updateContact(req.params.contactId, req.body);
     if (!updatedContact) {
       return res.status(404).json({ message: "Not found" });
+    }
+    return res.status(200).json({ message: "Contact was updated" });
+  } catch (error) {
+    next(error.message);
+  }
+});
+
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  try {
+    const validError = updateStatusContactSchema.validate(req.body);
+    if (validError.error) {
+      return res.status(400).json({ message: validError.error });
+    }
+
+    const updatedStatusContact = await updateStatusContact(
+      req.params.contactId,
+      req.body
+    );
+    if (!updatedStatusContact) {
+      return res.status(400).json({ message: "Missing field favorite" });
     }
     return res.status(200).json({ message: "Contact was updated" });
   } catch (error) {

@@ -63,12 +63,30 @@ const updateContact = async (contactId, body) => {
           name: body.name,
           email: body.email,
           phone: body.phone,
-          favorite: body.favorite,
         },
       },
       { returnDocument: "after" }
     );
     return updatedContact;
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const updateStatusContact = async (contactId, body) => {
+  try {
+    const Contacts = await connectMongo();
+
+    const updatedStatusContact = await Contacts.findOneAndUpdate(
+      { _id: new ObjectId(contactId) },
+      {
+        $set: {
+          favorite: body.favorite,
+        },
+      },
+      { returnDocument: "after" }
+    );
+    return updatedStatusContact;
   } catch (error) {
     console.log(error.message);
   }
@@ -80,4 +98,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };
