@@ -5,6 +5,7 @@ const {
   saveToken,
   removeToken,
 } = require("../models/users");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -67,8 +68,25 @@ const logoutAction = async (req, res, next) => {
       return res.status(401).json({ message: "Not authorized" });
     }
 
-    removeToken(_id);
+    await removeToken(_id);
     return res.status(204).json();
+  } catch (error) {
+    next(error.message);
+  }
+};
+
+const getCurrentUserAction = async (req, res, next) => {
+  const { _id } = req.user;
+  try {
+    const user = await getUserById(_id);
+
+    if (!user) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+
+    return res
+      .status(200)
+      .json({ email: user.email, subscription: user.subscription });
   } catch (error) {
     next(error.message);
   }
@@ -78,4 +96,5 @@ module.exports = {
   registrationAction,
   loginAction,
   logoutAction,
+  getCurrentUserAction,
 };

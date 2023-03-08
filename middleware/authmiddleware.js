@@ -1,17 +1,17 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-  const [tokenType, token] = req.headers.authorization.split(" ");
-
-  if (!token) {
-    next(
-      res.status(401).json({
-        message: "Token is required",
-      })
-    );
-  }
-
   try {
+    const [tokenType, token] = req.headers.authorization.split(" ");
+
+    if (!token) {
+      next(
+        res.status(401).json({
+          message: "Token is required",
+        })
+      );
+    }
+
     const user = jwt.decode(token, process.env.JWT_SECRET);
     if (!user) {
       next(

@@ -15,6 +15,7 @@ const {
   registrationAction,
   loginAction,
   logoutAction,
+  getCurrentUserAction,
 } = require("../../controllers/authControllers");
 
 router.post(
@@ -24,5 +25,10 @@ router.post(
 );
 router.post("/users/login", loginValidation, asyncWrapper(loginAction));
 router.post("/users/logout", authMiddleware, asyncWrapper(logoutAction));
+router.get(
+  "/users/current",
+  authMiddleware,
+  asyncWrapper(getCurrentUserAction)
+);
 
 module.exports = router;
