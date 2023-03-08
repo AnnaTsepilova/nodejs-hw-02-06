@@ -9,6 +9,8 @@ const {
   objectIdValidation,
 } = require("../../middleware/validation");
 
+const { authMiddleware } = require("../../middleware/authMiddleware");
+
 const { asyncWrapper } = require("../../helpers/apiHelpers");
 
 const {
@@ -20,6 +22,7 @@ const {
   updateStatusContactAction,
 } = require("../../controllers/contactControllers");
 
+router.use(authMiddleware);
 router.get("/", asyncWrapper(getContactsListAction));
 router.get(
   "/:contactId",

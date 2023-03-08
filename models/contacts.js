@@ -1,7 +1,7 @@
 const { Contact } = require("../db/contactModel");
 
-const listContacts = async () => {
-  const contactsList = await Contact.find({});
+const listContacts = async (owner) => {
+  const contactsList = await Contact.find({ owner });
   return contactsList;
 };
 
@@ -13,9 +13,9 @@ const removeContact = async (contactId) => {
   return Contact.findByIdAndRemove(contactId);
 };
 
-const addContact = async (body) => {
+const addContact = async (body, owner) => {
   const { name, email, phone } = body;
-  return Contact.create({ name, email, phone });
+  return Contact.create({ owner, name, email, phone });
 };
 
 const updateContact = async (contactId, body) => {

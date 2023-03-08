@@ -19,7 +19,6 @@ const loginAction = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ message: "Email or password is wrong" });
     }
-    console.log("User:", user);
 
     if (!(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ message: "Email or password is wrong" });

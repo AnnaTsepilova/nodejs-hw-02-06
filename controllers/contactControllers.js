@@ -8,8 +8,9 @@ const {
 } = require("../models/contacts");
 
 const getContactsListAction = async (req, res, next) => {
+  const { _id } = req.user;
   try {
-    const contactsList = await listContacts();
+    const contactsList = await listContacts(_id);
     return res.status(200).json(contactsList);
   } catch (error) {
     next(error.message);
@@ -31,14 +32,19 @@ const getContactByIdAction = async (req, res, next) => {
 
 const addContactAction = async (req, res, next) => {
   try {
-    const newContact = await addContact({
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-      favorite: false,
-    });
+    const { _id } = req.user;
+    const newContact = await addContact(
+      {
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        favorite: false,
+      },
+      _id
+    );
     return res.status(201).json(newContact);
   } catch (error) {
+    console.log(error.message);
     next(error.message);
   }
 };
