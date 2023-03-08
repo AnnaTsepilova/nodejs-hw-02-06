@@ -59,4 +59,40 @@ module.exports = {
 
     next();
   },
+
+  registerNewUserValidation: (req, res, next) => {
+    const schema = Joi.object({
+      email: Joi.string()
+        .pattern(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)
+        .required(),
+      password: Joi.string()
+        .pattern(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,40}$/)
+        .required(),
+    });
+
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      return res
+        .status(400)
+        .json({ message: validationResult.error.details[0].message });
+    }
+
+    next();
+  },
+
+  loginValidation: (req, res, next) => {
+    const schema = Joi.object({
+      email: Joi.string().required(),
+      password: Joi.string().required(),
+    });
+
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      return res
+        .status(400)
+        .json({ message: validationResult.error.details[0].message });
+    }
+
+    next();
+  },
 };

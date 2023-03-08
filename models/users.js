@@ -13,7 +13,29 @@ const loginUser = async (email, password) => {
   return user;
 };
 
+const getUserById = async (_id) => {
+  const user = await User.findOne({ _id });
+  return user;
+};
+
+const saveToken = async (_id, token) => {
+  return User.findByIdAndUpdate(_id, {
+    $set: { token },
+    runValidators: true,
+  });
+};
+
+const removeToken = async (_id) => {
+  return User.findByIdAndUpdate(_id, {
+    $set: { token: null },
+    runValidators: true,
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  getUserById,
+  saveToken,
+  removeToken,
 };
