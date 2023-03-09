@@ -1,19 +1,24 @@
 const jwt = require("jsonwebtoken");
+const { User } = require("../db/userModel");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
+  const { authorization = "" } = req.headers;
+  const [bearer, token] = authorization.split(" ");
+
+  if (bearer !== "Bearer") {
+    next(
+      res.status(401).json({
+        message: "Token is required",
+      })
+    );
+  }
+
   try {
-    const [tokenType, token] = req.headers.authorization.split(" ");
+    const { _id } = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!token) {
-      next(
-        res.status(401).json({
-          message: "Token is required",
-        })
-      );
-    }
+    const user = await User.findById(_id);
 
-    const user = jwt.decode(token, process.env.JWT_SECRET);
-    if (!user) {
+    if (!user || user.token !== token) {
       next(
         res.status(401).json({
           message: "Not authorized",
@@ -25,7 +30,11 @@ const authMiddleware = (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    next(error.message);
+    next(
+      res.status(401).json({
+        message: error.message,
+      })
+    );
   }
 };
 
