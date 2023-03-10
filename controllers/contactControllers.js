@@ -8,10 +8,14 @@ const {
 } = require("../models/contacts");
 
 const getContactsListAction = async (req, res, next) => {
-  const { _id } = req.user;
   try {
-    const contactsList = await listContacts(_id);
-    return res.status(200).json(contactsList);
+    const { _id: owner } = req.user;
+    let { page = 1, limit = 20 } = req.query;
+    limit = limit > 20 ? 20 : limit;
+    const skipAmount = (page - 1) * limit;
+
+    const contactsList = await listContacts(owner, { skipAmount, limit });
+    return res.status(200).json({ contactsList, page, limit });
   } catch (error) {
     next(error.message);
   }
@@ -19,7 +23,8 @@ const getContactsListAction = async (req, res, next) => {
 
 const getContactByIdAction = async (req, res, next) => {
   try {
-    const contactById = await getContactById(req.params.contactId);
+    const { _id: owner } = req.user;
+    const contactById = await getContactById(req.params.contactId, owner);
     if (!contactById) {
       res.status(404).json({ message: "Not found" });
       return;
@@ -32,7 +37,7 @@ const getContactByIdAction = async (req, res, next) => {
 
 const addContactAction = async (req, res, next) => {
   try {
-    const { _id } = req.user;
+    const { _id: owner } = req.user;
     const newContact = await addContact(
       {
         name: req.body.name,
@@ -40,7 +45,7 @@ const addContactAction = async (req, res, next) => {
         phone: req.body.phone,
         favorite: false,
       },
-      _id
+      owner
     );
     return res.status(201).json(newContact);
   } catch (error) {
@@ -51,7 +56,8 @@ const addContactAction = async (req, res, next) => {
 
 const removeContactAction = async (req, res, next) => {
   try {
-    const contactById = await getContactById(req.params.contactId);
+    const { _id: owner } = req.user;
+    const contactById = await getContactById(req.params.contactId, owner);
 
     if (!contactById) {
       res.status(404).json({ message: "Not found" });
@@ -66,7 +72,12 @@ const removeContactAction = async (req, res, next) => {
 
 const updateContactAction = async (req, res, next) => {
   try {
-    const updatedContact = await updateContact(req.params.contactId, req.body);
+    const { _id: owner } = req.user;
+    const updatedContact = await updateContact(
+      req.params.contactId,
+      req.body,
+      owner
+    );
     if (!updatedContact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -78,9 +89,11 @@ const updateContactAction = async (req, res, next) => {
 
 const updateStatusContactAction = async (req, res, next) => {
   try {
+    const { _id: owner } = req.user;
     const updatedStatusContact = await updateStatusContact(
       req.params.contactId,
-      req.body
+      req.body,
+      owner
     );
     if (!updatedStatusContact) {
       return res.status(400).json({ message: "Missing field favorite" });

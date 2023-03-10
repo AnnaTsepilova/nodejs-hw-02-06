@@ -76,17 +76,12 @@ const logoutAction = async (req, res, next) => {
 };
 
 const getCurrentUserAction = async (req, res, next) => {
-  const { _id } = req.user;
   try {
-    const user = await getUserById(_id);
-
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
     return res
       .status(200)
-      .json({ email: user.email, subscription: user.subscription });
+      .json({
+        user: { email: req.user.email, subscription: req.user.subscription },
+      });
   } catch (error) {
     next(error.message);
   }
