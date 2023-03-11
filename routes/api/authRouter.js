@@ -5,6 +5,7 @@ const router = express.Router();
 const {
   registerNewUserValidation,
   loginValidation,
+  subscriptionValidation,
 } = require("../../middleware/validation");
 
 const { authMiddleware } = require("../../middleware/authMiddleware");
@@ -16,6 +17,7 @@ const {
   loginAction,
   logoutAction,
   getCurrentUserAction,
+  updateSubscriptionAction,
 } = require("../../controllers/authControllers");
 
 router.post(
@@ -29,6 +31,12 @@ router.get(
   "/users/current",
   authMiddleware,
   asyncWrapper(getCurrentUserAction)
+);
+router.patch(
+  "/users",
+  authMiddleware,
+  subscriptionValidation,
+  asyncWrapper(updateSubscriptionAction)
 );
 
 module.exports = router;

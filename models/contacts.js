@@ -1,7 +1,12 @@
 const { Contact } = require("../db/contactModel");
 
-const listContacts = async (owner, { skipAmount, limit }) => {
-  const contactsList = await Contact.find({ owner })
+const listContacts = async (owner, favorite, { skipAmount, limit }) => {
+  const queryObject = { owner: owner };
+  if (favorite) {
+    queryObject.favorite = favorite === "true";
+  }
+
+  const contactsList = await Contact.find(queryObject)
     .skip(skipAmount)
     .limit(limit);
   return contactsList;

@@ -95,4 +95,19 @@ module.exports = {
 
     next();
   },
+
+  subscriptionValidation: (req, res, next) => {
+    const schema = Joi.object({
+      subscription: Joi.string().valid("starter", "pro", "business"),
+    });
+
+    const validationResult = schema.validate(req.body);
+    if (validationResult.error) {
+      return res
+        .status(400)
+        .json({ message: validationResult.error.details[0].message });
+    }
+
+    next();
+  },
 };

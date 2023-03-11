@@ -13,8 +13,12 @@ const getContactsListAction = async (req, res, next) => {
     let { page = 1, limit = 20 } = req.query;
     limit = limit > 20 ? 20 : limit;
     const skipAmount = (page - 1) * limit;
+    const { favorite } = req.query;
 
-    const contactsList = await listContacts(owner, { skipAmount, limit });
+    const contactsList = await listContacts(owner, favorite, {
+      skipAmount,
+      limit,
+    });
     return res.status(200).json({ contactsList, page, limit });
   } catch (error) {
     next(error.message);

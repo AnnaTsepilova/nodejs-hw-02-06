@@ -32,10 +32,18 @@ const removeToken = async (_id) => {
   });
 };
 
+const updateSubscription = async (subscription, owner) => {
+  return User.findByIdAndUpdate(owner, {
+    $set: { subscription },
+    runValidators: true,
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserById,
   saveToken,
   removeToken,
+  updateSubscription,
 };

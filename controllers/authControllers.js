@@ -4,6 +4,7 @@ const {
   getUserById,
   saveToken,
   removeToken,
+  updateSubscription,
 } = require("../models/users");
 
 const bcrypt = require("bcrypt");
@@ -77,11 +78,27 @@ const logoutAction = async (req, res, next) => {
 
 const getCurrentUserAction = async (req, res, next) => {
   try {
-    return res
-      .status(200)
-      .json({
-        user: { email: req.user.email, subscription: req.user.subscription },
-      });
+    return res.status(200).json({
+      user: { email: req.user.email, subscription: req.user.subscription },
+    });
+  } catch (error) {
+    next(error.message);
+  }
+};
+
+const updateSubscriptionAction = async (req, res, next) => {
+  try {
+    const { _id: owner } = req.user;
+    const { subscription } = req.body;
+
+    const updateUserSubscription = await updateSubscription(
+      subscription,
+      owner
+    );
+    if (!updateUserSubscription) {
+      return res.status(400).json({ message: "Missing field subscription" });
+    }
+    return res.status(200).json({ message: "Contact was updated" });
   } catch (error) {
     next(error.message);
   }
@@ -92,4 +109,5 @@ module.exports = {
   loginAction,
   logoutAction,
   getCurrentUserAction,
+  updateSubscriptionAction,
 };
