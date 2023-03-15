@@ -104,10 +104,18 @@ const updateSubscriptionAction = async (req, res, next) => {
   }
 };
 
+const addAvatarAction = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error.message);
+  }
+};
+
 module.exports = {
   registrationAction,
   loginAction,
   logoutAction,
   getCurrentUserAction,
   updateSubscriptionAction,
+  addAvatarAction,
 };

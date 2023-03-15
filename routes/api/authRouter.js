@@ -18,6 +18,7 @@ const {
   logoutAction,
   getCurrentUserAction,
   updateSubscriptionAction,
+  addAvatarAction,
 } = require("../../controllers/authControllers");
 
 router.post(
@@ -27,6 +28,7 @@ router.post(
 );
 router.post("/users/login", loginValidation, asyncWrapper(loginAction));
 router.post("/users/logout", authMiddleware, asyncWrapper(logoutAction));
+router.post("/users/avatar", authMiddleware, asyncWrapper(addAvatarAction));
 router.get(
   "/users/current",
   authMiddleware,
