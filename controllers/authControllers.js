@@ -5,10 +5,15 @@ const {
   saveToken,
   removeToken,
   updateSubscription,
+  updateAvatar,
 } = require("../models/users");
+
+const imageSize = require("../helpers/imgHelpers");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const fs = require("fs/promises");
+const path = require("path");
 
 const registrationAction = async (req, res, next) => {
   try {
@@ -104,8 +109,27 @@ const updateSubscriptionAction = async (req, res, next) => {
   }
 };
 
-const addAvatarAction = async (req, res, next) => {
+const avatarDir = path.join(__dirname, "../", "public", "avatars");
+
+const updateAvatarAction = async (req, res, next) => {
   try {
+    const { _id: owner } = req.user;
+    const { path: tempUpload, originalname } = req.file;
+    if (!req.file) {
+      return res.status(401).json({ message: "Please upload a file" });
+    }
+
+    const filename = `${owner}_${originalname}`;
+    const resultUpload = path.join(avatarDir, filename);
+    await fs.rename(tempUpload, resultUpload);
+    await imageSize(resultUpload);
+
+    const avatarUrl = path.join("avatars", filename);
+    const updateUserAvatar = await updateAvatar(avatarUrl, owner);
+    if (!updateUserAvatar) {
+      return res.status(401).json({ message: "Not authorized" });
+    }
+    return res.status(200).json({ avatarUrl: avatarUrl });
   } catch (error) {
     next(error.message);
   }
@@ -117,5 +141,5 @@ module.exports = {
   logoutAction,
   getCurrentUserAction,
   updateSubscriptionAction,
-  addAvatarAction,
+  updateAvatarAction,
 };

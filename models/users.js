@@ -1,9 +1,12 @@
 const { User } = require("../db/userModel");
+const gravatar = require("gravatar");
 
 const registerUser = async (email, password) => {
+  const avatarURL = gravatar.url(email);
   const user = await new User({
     email,
     password,
+    avatarURL,
   });
   return user.save();
 };
@@ -39,6 +42,12 @@ const updateSubscription = async (subscription, owner) => {
   });
 };
 
+const updateAvatar = async (avatarUrl, owner) => {
+  return User.findByIdAndUpdate(owner, {
+    avatarUrl,
+  });
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -46,4 +55,5 @@ module.exports = {
   saveToken,
   removeToken,
   updateSubscription,
+  updateAvatar,
 };

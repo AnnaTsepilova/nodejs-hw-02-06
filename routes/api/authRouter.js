@@ -9,6 +9,7 @@ const {
 } = require("../../middleware/validation");
 
 const { authMiddleware } = require("../../middleware/authMiddleware");
+const upload = require("../../middleware/upload");
 
 const { asyncWrapper } = require("../../helpers/apiHelpers");
 
@@ -19,6 +20,7 @@ const {
   getCurrentUserAction,
   updateSubscriptionAction,
   addAvatarAction,
+  updateAvatarAction,
 } = require("../../controllers/authControllers");
 
 router.post(
@@ -39,6 +41,12 @@ router.patch(
   authMiddleware,
   subscriptionValidation,
   asyncWrapper(updateSubscriptionAction)
+);
+router.patch(
+  "/users/avatars",
+  authMiddleware,
+  upload.single("avatar"),
+  asyncWrapper(updateAvatarAction)
 );
 
 module.exports = router;
