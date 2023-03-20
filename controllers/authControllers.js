@@ -1,31 +1,51 @@
-const {
-  registerUser,
-  loginUser,
-  getUserById,
-  saveToken,
-  removeToken,
-  updateSubscription,
-  updateAvatar,
-} = require("../models/users");
-
-const imageSize = require("../helpers/imgHelpers");
-
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const fs = require("fs/promises");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const { BASE_URL } = process.env;
+const { BASE_EMAIL } = process.env;
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const imageSize = require("../helpers/imgHelpers");
+
+const {
+  registerUser,
+  loginUser,
+  getUserById,
+  getUserByEmail,
+  saveToken,
+  removeToken,
+  updateSubscription,
+  updateAvatar,
+  findUserByVerificationToken,
+  verifyUser,
+} = require("../models/users");
 
 const registrationAction = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await loginUser(email);
+
     if (user) {
       return res.status(409).json({
         message: "Email in use",
       });
     }
+    const verificationToken = uuidv4();
 
-    const newUser = await registerUser(email, password);
+    const newUser = await registerUser(email, password, verificationToken);
+
+    const msg = {
+      to: email,
+      from: BASE_EMAIL,
+      subject: "Verification email",
+      text: "Thank you for registration. Verificate your email",
+      html: `<a href="${BASE_URL}/api/users/verify/${verificationToken}" target="_blank">Click to confirm registration</a>`,
+    };
+    await sgMail.send(msg);
+
     return res.status(201).json({
       user: newUser,
     });
@@ -40,7 +60,13 @@ const loginAction = async (req, res, next) => {
     const user = await loginUser(email);
 
     if (!user) {
-      return res.status(401).json({ message: "Email or password is wrong" });
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (!user.verify) {
+      return res
+        .status(404)
+        .json({ message: "Verification has not been passed yet" });
     }
 
     if (!(await bcrypt.compare(password, user.password))) {
@@ -135,6 +161,60 @@ const updateAvatarAction = async (req, res, next) => {
   }
 };
 
+const verifyEmailAction = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+
+    const user = await findUserByVerificationToken(verificationToken);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res.status(200).json({ message: "User already verified" });
+    }
+
+    await verifyUser(user._id);
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error.message);
+  }
+};
+
+const resendVerifyEmailAction = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Missing required field email" });
+    }
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+
+    const msg = {
+      to: email,
+      from: BASE_EMAIL,
+      subject: "Verification email",
+      text: "Thank you for registration. Verificate your email",
+      html: `<a href="${BASE_URL}/api/users/verify/${user.verificationToken}" target="_blank">Click to confirm registration</a>`,
+    };
+    await sgMail.send(msg);
+
+    return res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    next(error.message);
+  }
+};
+
 module.exports = {
   registrationAction,
   loginAction,
@@ -142,4 +222,6 @@ module.exports = {
   getCurrentUserAction,
   updateSubscriptionAction,
   updateAvatarAction,
+  verifyEmailAction,
+  resendVerifyEmailAction,
 };
