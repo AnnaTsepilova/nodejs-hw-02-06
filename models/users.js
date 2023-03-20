@@ -13,18 +13,15 @@ const registerUser = async (email, password, verificationToken) => {
 };
 
 const loginUser = async (email) => {
-  const user = await User.findOne({ email });
-  return user;
+  return await User.findOne({ email });
 };
 
 const getUserById = async (_id) => {
-  const user = await User.findOne({ _id });
-  return user;
+  return await User.findOne({ _id });
 };
 
 const getUserByEmail = async (email) => {
-  const user = await User.findOne({ email });
-  return user;
+  return await User.findOne({ email });
 };
 
 const saveToken = async (_id, token) => {

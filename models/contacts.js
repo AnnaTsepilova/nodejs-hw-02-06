@@ -13,21 +13,21 @@ const listContacts = async (owner, favorite, { skipAmount, limit }) => {
 };
 
 const getContactById = async (contactId, owner) => {
-  return Contact.findById(contactId, owner);
+  return await Contact.findById(contactId, owner);
 };
 
 const removeContact = async (contactId, owner) => {
-  return Contact.findOneAndRemove(contactId, owner);
+  return await Contact.findOneAndRemove(contactId, owner);
 };
 
 const addContact = async (body, owner) => {
   const { name, email, phone } = body;
-  return Contact.create({ owner, name, email, phone });
+  return await Contact.create({ owner, name, email, phone });
 };
 
 const updateContact = async (contactId, body, owner) => {
   const { name, email, phone } = body;
-  return Contact.findOneAndUpdate(
+  return await Contact.findOneAndUpdate(
     contactId,
     {
       $set: { name, email, phone },
@@ -39,7 +39,7 @@ const updateContact = async (contactId, body, owner) => {
 
 const updateStatusContact = async (contactId, body, owner) => {
   const { favorite } = body;
-  return Contact.findByIdAndUpdate(
+  return await Contact.findByIdAndUpdate(
     contactId,
     {
       $set: { favorite },
